@@ -6,6 +6,7 @@ int main(int argc, char* argv[])
 {
 	//初始化WSA
 	WORD sockVersion = MAKEWORD(2, 2);
+	int SERVER_PORT = 6478;
 	WSADATA wsaData;
 	if (WSAStartup(sockVersion, &wsaData) != 0)
 	{
@@ -21,7 +22,7 @@ int main(int argc, char* argv[])
 	//绑定IP和端口
 	sockaddr_in sin;
 	sin.sin_family = AF_INET;
-	sin.sin_port = htons(5264);
+	sin.sin_port = htons(SERVER_PORT);
 	sin.sin_addr.S_un.S_addr = INADDR_ANY;
 	if (bind(slisten, (LPSOCKADDR)&sin, sizeof(sin)) == SOCKET_ERROR)
 	{
@@ -57,12 +58,16 @@ int main(int argc, char* argv[])
 		if (ret > 0)
 		{
 			revData[ret] = 0x00;
-			printf("待解密内容:%s\n", revData);
+			printf("接受内容:%s\n", revData);
 		}
-		for (int i = 0; i <ret; i++)
-		sendData[i] = revData[i] - 1;
-		sendData[ret] = 0x00;
-		printf("已解密内容:%s\n", sendData);
+		for (int i = 0; i < ret; i++)
+		revData[i] = revData[i] - 1;
+		revData[ret] = 0x00;
+		printf("已解密内容:%s\n", revData);
+		for (int i = 0; i <=ret; i++)
+		sendData[i] = revData[ret-1-i] + 1;
+		sendData[ret] = 0;
+		printf("翻转加密后数据:%s\n\n",sendData);
 		send(sClient, sendData, strlen(sendData), 0);
 		if(strcmp(sendData, "666")==0)
 		{
